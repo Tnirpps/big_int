@@ -124,6 +124,62 @@ TEST_FN(test_addition_large_mixed_sign) {
     big_int_delete(&expected);
 }
 
+TEST_FN(test_subtraction_simple) {
+    big_int_t a = big_int_from_int(10);
+    big_int_t b = big_int_from_int(3);
+    big_int_t c = big_int_sub(a, b);
+    big_int_t expected = big_int_from_int(7);
+
+    TEST_CHECK(big_int_cmp(c, expected) == 0, "10 - 3 == 7");
+
+    big_int_delete(&a);
+    big_int_delete(&b);
+    big_int_delete(&c);
+    big_int_delete(&expected);
+}
+
+TEST_FN(test_subtraction_large_borrow) {
+    big_int_t a = big_int_from_string("1000000000000000000000000000000");
+    big_int_t b = big_int_from_string("1");
+    big_int_t c = big_int_sub(a, b);
+    big_int_t expected = big_int_from_string("999999999999999999999999999999");
+
+    TEST_CHECK(big_int_cmp(c, expected) == 0, "1000...000 - 1 == 999...999");
+
+    big_int_delete(&a);
+    big_int_delete(&b);
+    big_int_delete(&c);
+    big_int_delete(&expected);
+}
+
+TEST_FN(test_subtraction_negative_result) {
+    big_int_t a = big_int_from_int(3);
+    big_int_t b = big_int_from_int(10);
+    big_int_t c = big_int_sub(a, b);
+    big_int_t expected = big_int_from_int(-7);
+
+    TEST_CHECK(big_int_cmp(c, expected) == 0, "3 - 10 == -7");
+
+    big_int_delete(&a);
+    big_int_delete(&b);
+    big_int_delete(&c);
+    big_int_delete(&expected);
+}
+
+TEST_FN(test_subtraction_to_zero) {
+    big_int_t a = big_int_from_string("-999999999999999999999999999999");
+    big_int_t b = big_int_from_string("-999999999999999999999999999999");
+    big_int_t c = big_int_sub(a, b);
+    big_int_t expected = big_int_from_int(0);
+
+    TEST_CHECK(big_int_cmp(c, expected) == 0, "x - x == 0");
+
+    big_int_delete(&a);
+    big_int_delete(&b);
+    big_int_delete(&c);
+    big_int_delete(&expected);
+}
+
 int main() {
     RUN_TESTS();
 }

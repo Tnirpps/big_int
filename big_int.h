@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -246,7 +247,7 @@ big_int_t big_int_sum(big_int_t a, big_int_t b) {
 
 void big_int_debug(big_int_t n) {
     if (n.cp == 0) {
-        printf("[stack]: %lld\n", n.as.num);
+        printf("[stack]: %ld\n", n.as.num);
     } else {
         printf("data = %p, sz = %zu, cp = %zu, neg = %d\n", n.as.data, n.sz, n.cp, n.negative);
         printf("num = ");
@@ -259,7 +260,7 @@ void big_int_debug(big_int_t n) {
 
 void big_int_print(big_int_t n) {
     if (n.cp == 0) {
-        printf("%lld\n", n.as.num);
+        printf("%ld\n", n.as.num);
     } else {
         if (n.negative) {
             printf("-");

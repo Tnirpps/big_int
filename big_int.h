@@ -25,6 +25,7 @@ big_int_t big_int_create();
 big_int_t big_int_from_int(int64_t x);
 big_int_t big_int_from_string(const char *str);
 big_int_t big_int_sum(big_int_t a, big_int_t b);
+big_int_t big_int_sub(big_int_t a, big_int_t b);
 
 int big_int_cmp(big_int_t a, big_int_t b);
 int big_int_cmp_abs(big_int_t a, big_int_t b);
@@ -37,7 +38,9 @@ void big_int_print(big_int_t n);
 
 // internal functions
 bool safe_add(int64_t a, int64_t b, int64_t *res);
+bool big_int_is_zero(big_int_t n);
 void convert_to_big(big_int_t *n);
+void big_int_normalize(big_int_t *n);
 void big_int_resize(big_int_t *n, size_t cp);
 void big_int_debug(big_int_t n);
 
@@ -99,6 +102,8 @@ big_int_t big_int_from_string(const char *str) {
         n.as.data[i] = n.as.data[n.sz - 1 - i];
         n.as.data[n.sz - 1 - i] = tmp;
     }
+
+    big_int_normalize(&n);
     
     return n;
 }
@@ -119,6 +124,20 @@ bool safe_add(int64_t a, int64_t b, int64_t *res) {
         }
         return false;
     }
+}
+
+bool big_int_is_zero(big_int_t n) {
+    if (n.cp == 0) {
+        return n.as.num == 0;
+    }
+
+    for (size_t i = 0; i < n.sz; ++i) {
+        if (n.as.data[i] != 0) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void convert_to_big(big_int_t *n) {
@@ -147,6 +166,28 @@ void convert_to_big(big_int_t *n) {
     while (x > 0) {
         n->as.data[n->sz++] = x % 10;
         x /= 10;
+    }
+}
+
+void big_int_normalize(big_int_t *n) {
+    if (n->cp == 0) {
+        if (n->as.num == 0) {
+            n->negative = false;
+        }
+        return;
+    }
+
+    while (n->sz > 1 && n->as.data[n->sz - 1] == 0) {
+        n->sz--;
+    }
+
+    if (n->sz == 0) {
+        n->sz = 1;
+        n->as.data[0] = 0;
+    }
+
+    if (n->sz == 1 && n->as.data[0] == 0) {
+        n->negative = false;
     }
 }
 
@@ -239,10 +280,27 @@ big_int_t big_int_sum(big_int_t a, big_int_t b) {
         res.negative = big->negative;
     }
 
+    big_int_normalize(&res);
+
     if (short_a) big_int_delete(&a);
     if (short_b) big_int_delete(&b);
 
     return res;
+}
+
+big_int_t big_int_sub(big_int_t a, big_int_t b) {
+    if (b.cp == 0) {
+        if (b.as.num == INT64_MIN) {
+            convert_to_big(&b);
+            b.negative = !b.negative;
+        } else {
+            b.as.num = -b.as.num;
+        }
+    } else if (!big_int_is_zero(b)) {
+        b.negative = !b.negative;
+    }
+
+    return big_int_sum(a, b);
 }
 
 void big_int_debug(big_int_t n) {
@@ -323,4 +381,3 @@ int big_int_cmp(big_int_t a, big_int_t b) {
 #endif // BIG_INT_IMPLEMENTATION
 
 #endif // !BIG_INT_H
-

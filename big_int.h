@@ -39,6 +39,9 @@ void big_int_print(big_int_t n);
 // internal functions
 bool safe_add(int64_t a, int64_t b, int64_t *res);
 bool big_int_is_zero(big_int_t n);
+bool big_int_is_negative(big_int_t n);
+bool big_int_is_positive(big_int_t n);
+
 void convert_to_big(big_int_t *n);
 void big_int_normalize(big_int_t *n);
 void big_int_resize(big_int_t *n, size_t cp);
@@ -375,6 +378,17 @@ int big_int_cmp(big_int_t a, big_int_t b) {
         return -cmp;
     }
     return cmp;
+}
+bool big_int_is_negative(big_int_t n) {
+    if (big_int_is_zero(n)) return false;
+    if (n.cp == 0) return n.as.num < 0;
+    return n.negative;
+}
+
+bool big_int_is_positive(big_int_t n) {
+    if (big_int_is_zero(n)) return false;
+    if (n.cp == 0) return n.as.num > 0;
+    return !n.negative;
 }
 
 

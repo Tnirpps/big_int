@@ -179,7 +179,79 @@ TEST_FN(test_subtraction_to_zero) {
     big_int_delete(&c);
     big_int_delete(&expected);
 }
+TEST_FN(test_is_negative_negative_number) {
+    big_int_t a = big_int_from_int(-10);
+    TEST_CHECK(big_int_is_negative(a) == true, "-10 is negative");
+    big_int_delete(&a);
+}
+
+TEST_FN(test_is_negative_positive_number) {
+    big_int_t a = big_int_from_int(10);
+    TEST_CHECK(big_int_is_negative(a) == false, "10 is not negative");
+    big_int_delete(&a);
+}
+
+TEST_FN(test_is_negative_zero) {
+    big_int_t a = big_int_from_int(0);
+    TEST_CHECK(big_int_is_negative(a) == false, "0 is not negative");
+    big_int_delete(&a);
+}
+
+TEST_FN(test_is_negative_large_negative) {
+    big_int_t a = big_int_from_string("-99999999999999999999");
+    TEST_CHECK(big_int_is_negative(a) == true, "large negative is negative");
+    big_int_delete(&a);
+}
+
+TEST_FN(test_is_positive_positive_number) {
+    big_int_t a = big_int_from_int(10);
+    TEST_CHECK(big_int_is_positive(a) == true, "10 is positive");
+    big_int_delete(&a);
+}
+
+TEST_FN(test_is_positive_negative_number) {
+    big_int_t a = big_int_from_int(-10);
+    TEST_CHECK(big_int_is_positive(a) == false, "-10 is not positive");
+    big_int_delete(&a);
+}
+
+TEST_FN(test_is_positive_zero) {
+    big_int_t a = big_int_from_int(0);
+    TEST_CHECK(big_int_is_positive(a) == false, "0 is not positive");
+    big_int_delete(&a);
+}
+
+TEST_FN(test_is_positive_large_positive) {
+    big_int_t a = big_int_from_string("99999999999999999999");
+    TEST_CHECK(big_int_is_positive(a) == true, "large positive is positive");
+    big_int_delete(&a);
+}
 
 int main() {
-    RUN_TESTS();
+    test_addition_simple();
+    test_from_string_small();
+    test_from_string_negative();
+    test_addition_large_numbers();
+    test_addition_large_same_sign();
+    test_addition_mixed_sign();
+    test_addition_negative_result();
+    test_addition_large_negative();
+    test_addition_large_mixed_sign();
+    test_subtraction_simple();
+    test_subtraction_large_borrow();
+    test_subtraction_negative_result();
+    test_subtraction_to_zero();
+
+    // новые тесты
+    test_is_negative_negative_number();
+    test_is_negative_positive_number();
+    test_is_negative_zero();
+    test_is_negative_large_negative();
+    test_is_positive_positive_number();
+    test_is_positive_negative_number();
+    test_is_positive_zero();
+    test_is_positive_large_positive();
+
+    printf("\n==== All tests finished ====\n");
+    return 0;
 }

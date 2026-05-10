@@ -226,6 +226,35 @@ TEST_FN(test_is_positive_large_positive) {
     TEST_CHECK(big_int_is_positive(a) == true, "large positive is positive");
     big_int_delete(&a);
 }
+TEST_FN(test_is_zero_zero_int) {
+    big_int_t a = big_int_from_int(0);
+    TEST_CHECK(big_int_is_zero(a) == true, "int 0 is zero");
+    big_int_delete(&a);
+}
+
+TEST_FN(test_is_zero_positive_int) {
+    big_int_t a = big_int_from_int(42);
+    TEST_CHECK(big_int_is_zero(a) == false, "42 is not zero");
+    big_int_delete(&a);
+}
+
+TEST_FN(test_is_zero_negative_int) {
+    big_int_t a = big_int_from_int(-5);
+    TEST_CHECK(big_int_is_zero(a) == false, "-5 is not zero");
+    big_int_delete(&a);
+}
+
+TEST_FN(test_is_zero_large) {
+    big_int_t a = big_int_from_string("1000000000000000000000000");
+    TEST_CHECK(big_int_is_zero(a) == false, "large is not zero");
+    big_int_delete(&a);
+}
+
+TEST_FN(test_is_zero_zero_string) {
+    big_int_t a = big_int_from_string("0");
+    TEST_CHECK(big_int_is_zero(a) == true, "string '0' is zero");
+    big_int_delete(&a);
+}
 
 int main() {
     test_addition_simple();
@@ -251,6 +280,11 @@ int main() {
     test_is_positive_negative_number();
     test_is_positive_zero();
     test_is_positive_large_positive();
+    test_is_zero_zero_int();
+    test_is_zero_positive_int();
+    test_is_zero_negative_int();
+    test_is_zero_large();
+    test_is_zero_zero_string();
 
     printf("\n==== All tests finished ====\n");
     return 0;

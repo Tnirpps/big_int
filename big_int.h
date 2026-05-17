@@ -33,6 +33,8 @@ int big_int_cmp_abs(big_int_t a, big_int_t b);
 void big_int_delete(big_int_t *n);
 void big_int_print(big_int_t n);
 
+big_int_t big_int_copy(big_int_t n);
+
 
 
 
@@ -377,6 +379,16 @@ int big_int_cmp(big_int_t a, big_int_t b) {
     return cmp;
 }
 
+big_int_t big_int_copy(big_int_t n) {
+    if (n.cp == 0) return n;
+    big_int_t c;
+    c.sz       = n.sz;
+    c.cp       = n.cp;
+    c.negative = n.negative;
+    c.as.data  = (int32_t *)malloc(sizeof(int32_t) * n.cp);
+    memcpy(c.as.data, n.as.data, sizeof(int32_t) * n.sz);
+    return c;
+}
 
 #endif // BIG_INT_IMPLEMENTATION
 

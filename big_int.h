@@ -386,9 +386,10 @@ big_int_t big_int_copy(big_int_t n) {
     c.cp       = n.cp;
     c.negative = n.negative;
     c.as.data  = (int32_t *)malloc(sizeof(int32_t) * n.cp);
+    assert(c.as.data != NULL);
     memcpy(c.as.data, n.as.data, sizeof(int32_t) * n.sz);
     return c;
-}
+}   
 
 #endif // BIG_INT_IMPLEMENTATION
 

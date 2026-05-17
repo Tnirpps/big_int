@@ -180,6 +180,60 @@ TEST_FN(test_subtraction_to_zero) {
     big_int_delete(&expected);
 }
 
+//Тесты для big_int_copy
+TEST_FN(test_copy_small) {
+    big_int_t a = big_int_from_int(42);
+    big_int_t b = big_int_copy(a);
+
+    TEST_CHECK(big_int_cmp(a, b) == 0, "copy of small int equals original");
+
+    big_int_delete(&a);
+    big_int_delete(&b);
+}
+
+TEST_FN(test_copy_large) {
+    big_int_t a = big_int_from_string("123456789012345678901234567890");
+    big_int_t b = big_int_copy(a);
+
+    TEST_CHECK(big_int_cmp(a, b) == 0, "copy of large int equals original");
+
+    big_int_delete(&a);
+    big_int_delete(&b);
+}
+
+TEST_FN(test_copy_independence) {
+    big_int_t a = big_int_from_string("999999999999999999999999999999");
+    big_int_t b = big_int_copy(a);
+
+    big_int_delete(&a); // удаляем оригинал
+
+    big_int_t expected = big_int_from_string("999999999999999999999999999999");
+    TEST_CHECK(big_int_cmp(b, expected) == 0, "copy is independent from original");
+
+    big_int_delete(&b);
+    big_int_delete(&expected);
+}
+
+TEST_FN(test_copy_negative) {
+    big_int_t a = big_int_from_string("-987654321098765432109876543210");
+    big_int_t b = big_int_copy(a);
+
+    TEST_CHECK(big_int_cmp(a, b) == 0, "copy of negative large int equals original");
+
+    big_int_delete(&a);
+    big_int_delete(&b);
+}
+
+TEST_FN(test_copy_zero) {
+    big_int_t a = big_int_from_int(0);
+    big_int_t b = big_int_copy(a);
+
+    TEST_CHECK(big_int_cmp(a, b) == 0, "copy of zero equals original");
+
+    big_int_delete(&a);
+    big_int_delete(&b);
+}
+
 int main() {
     RUN_TESTS();
 }

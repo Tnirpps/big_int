@@ -1,5 +1,9 @@
-# big_int
+# Updates
 
+- **Multiplication:** Added `big_int_mul` function.
+- **Bug Fix:** Fixed memory leaks during small-to-big integer conversion.
+
+# big_int
 Single-header C library for basic big integer arithmetic.
 
 Currently supports:

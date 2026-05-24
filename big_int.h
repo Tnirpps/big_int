@@ -35,16 +35,19 @@ void big_int_print(big_int_t n);
 
 big_int_t big_int_copy(big_int_t n);
 
-
+big_int_t big_int_mul(big_int_t a, big_int_t b);
 
 
 // internal functions
 bool safe_add(int64_t a, int64_t b, int64_t *res);
-bool big_int_is_zero(big_int_t n);
+bool big_int_is_zero(big_int_t *n);
 void convert_to_big(big_int_t *n);
 void big_int_normalize(big_int_t *n);
 void big_int_resize(big_int_t *n, size_t cp);
 void big_int_debug(big_int_t n);
+
+big_int_t mul_digit(big_int_t b, int digit);
+bool shift_left(big_int_t *n, int count);
 
 #ifdef BIG_INT_IMPLEMENTATION
 big_int_t big_int_create() {
@@ -128,13 +131,13 @@ bool safe_add(int64_t a, int64_t b, int64_t *res) {
     }
 }
 
-bool big_int_is_zero(big_int_t n) {
-    if (n.cp == 0) {
-        return n.as.num == 0;
+bool big_int_is_zero(big_int_t *n) {
+    if (n->cp == 0) {
+        return n->as.num == 0;
     }
 
-    for (size_t i = 0; i < n.sz; ++i) {
-        if (n.as.data[i] != 0) {
+    for (size_t i = 0; i < n->sz; ++i) {
+        if (n->as.data[i] != 0) {
             return false;
         }
     }
@@ -290,6 +293,107 @@ big_int_t big_int_sum(big_int_t a, big_int_t b) {
     return res;
 }
 
+bool shift_left(big_int_t *n, int count)
+{
+    if (n->sz + count > n->cp)
+    {
+        n->as.data = (int32_t *)realloc(n->as.data, sizeof(int32_t) * (n->sz + count));
+    }
+    n->cp = n->cp + count;
+    for (int i = n->sz - 1; i > -1; i--)
+    {
+        n->as.data[i + count] = n->as.data[i];
+    }
+    for (int i = 0; i < count; i++)
+    {
+        n->as.data[i] = 0;
+    }
+    n->sz = n->sz + count;
+    return true;
+}
+
+big_int_t mul_digit(big_int_t a, int digit)
+{
+    big_int_t result = big_int_create();
+    if (digit == 0 || big_int_is_zero(&a))
+    {
+        big_int_resize(&result, 1); 
+        return result;
+    }
+
+    if (a.cp == 0) convert_to_big(&a);
+    
+    result.cp = a.sz + 1;
+    result.as.data = (int32_t*)malloc(sizeof(int32_t) * result.cp);
+    result.sz = 0;
+
+    int carry = 0;
+    int mul_for_digit = 0;
+    for (size_t i = 0; i < a.sz; i++)
+    {
+        mul_for_digit = digit * a.as.data[i] + carry;
+        result.as.data[i] = mul_for_digit % 10;
+        carry = mul_for_digit / 10;
+        result.sz++;
+    }
+    if (carry > 0) {
+        result.as.data[result.sz] = carry;
+        result.sz++;
+    }
+
+    big_int_normalize(&result);
+    return result;
+}
+
+// i - 0 1 2 3  разряды идут в обратном порядке
+// a - 3 2 1 1  число 1123
+// b - 7 8      число 87
+// берём одно число как то, по которому будем идти циклом, а второе будем умножать на цифры в этом цикле
+// умножение столбиком идёт с права на лево, те у нас будет прямой проход по первому число, начиная с младших разрядов
+// берём цифру a[i], умноажем эту цифру на b, делаем сдвиг на i (вслево число, вправо массив), прибавляем к буферу, идём дальше
+
+big_int_t big_int_mul(big_int_t a, big_int_t b)
+{
+    // если одно или оба числа - маленькие, конвертируем их в большие
+    if (a.cp == 0) convert_to_big(&a);
+    if (b.cp == 0) convert_to_big(&b);
+
+    bool result_negative = (a.negative != b.negative);
+
+    big_int_t result = big_int_create(); 
+
+    if (big_int_is_zero(&a) || big_int_is_zero(&b)) 
+    {
+        if (a.cp > 0) big_int_delete(&a);
+        if (b.cp > 0) big_int_delete(&b);
+        result.as.num = 0;
+        return result;
+    }
+
+    int digit = 1;
+    big_int_t sum = big_int_create();
+    for (size_t i = 0; i < a.sz; i++)
+    {
+        digit = a.as.data[i];
+        if (digit == 0) continue; // умножение на 0 просто пропустим 
+        
+        big_int_delete(&sum); 
+
+        sum = mul_digit(b, digit);
+        shift_left(&sum, i);
+        big_int_t s = big_int_create();
+        s = result;
+        result = big_int_sum(s, sum);
+        big_int_delete(&s); 
+    }
+    big_int_delete(&sum); 
+    result.negative = result_negative;
+    big_int_normalize(&result);
+    if (a.cp > 0) big_int_delete(&a);
+    if (b.cp > 0) big_int_delete(&b);
+    return result;
+}
+
 big_int_t big_int_sub(big_int_t a, big_int_t b) {
     if (b.cp == 0) {
         if (b.as.num == INT64_MIN) {
@@ -298,11 +402,11 @@ big_int_t big_int_sub(big_int_t a, big_int_t b) {
         } else {
             b.as.num = -b.as.num;
         }
-    } else if (!big_int_is_zero(b)) {
+    } else if (!big_int_is_zero(&b)) {
         b.negative = !b.negative;
     }
-
-    return big_int_sum(a, b);
+    big_int_t res = big_int_sum(a, b);
+    return res;
 }
 
 void big_int_debug(big_int_t n) {
@@ -333,18 +437,24 @@ void big_int_print(big_int_t n) {
 }
 
 int big_int_cmp_abs(big_int_t a, big_int_t b) {
-    if (a.cp == 0 && b.cp == 0) {
+    bool a_short = (a.cp == 0);
+    bool b_short = (b.cp == 0);
+
+    if (a_short && b_short) {
         uint64_t ua = (a.as.num < 0) ? (uint64_t)(-(a.as.num + 1)) + 1 : (uint64_t)a.as.num;
         uint64_t ub = (b.as.num < 0) ? (uint64_t)(-(b.as.num + 1)) + 1 : (uint64_t)b.as.num;
         if (ua == ub) return 0;
         return (ua > ub) ? 1 : -1;
     }
     
-    if (a.cp == 0) convert_to_big(&a);
-    if (b.cp == 0) convert_to_big(&b);
+    if (a_short) convert_to_big(&a);
+    if (b_short) convert_to_big(&b);
     
     if (a.sz != b.sz) {
-        return (a.sz > b.sz) ? 1 : -1;
+        int res = (a.sz > b.sz) ? 1 : -1;
+        if (a_short) big_int_delete(&a);
+        if (b_short) big_int_delete(&b);
+        return res;
     }
 
     for (size_t i = a.sz; i > 0; --i) {
@@ -352,6 +462,8 @@ int big_int_cmp_abs(big_int_t a, big_int_t b) {
             return (a.as.data[i - 1] > b.as.data[i - 1]) ? 1 : -1;
         }
     }
+    if (a_short) big_int_delete(&a);
+    if (b_short) big_int_delete(&b);
     return 0;
 }
 
@@ -368,12 +480,17 @@ int big_int_cmp(big_int_t a, big_int_t b) {
     if (short_b) convert_to_big(&b);
     
     if (a.negative != b.negative) {
-        return a.negative ? -1 : 1;
+        bool s = a.negative;
+        return s ? -1 : 1;
     }
     
     int cmp = big_int_cmp_abs(a, b);
+    int s = a.negative;
+
+    if (short_a) big_int_delete(&a);
+    if (short_b) big_int_delete(&b);
     
-    if (a.negative) {
+    if (s) {
         return -cmp;
     }
     return cmp;

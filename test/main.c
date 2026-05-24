@@ -234,6 +234,84 @@ TEST_FN(test_copy_zero) {
     big_int_delete(&b);
 }
 
+// 1. Простое умножение двух маленьких чисел (5 * 4 = 20)
+TEST_FN(test_mul_simple) {
+    printf("\n--------------------------\n");
+    printf("Test for mul\n");
+    printf("--------------------------\n\n");
+    big_int_t a = big_int_from_int(5);
+    big_int_t b = big_int_from_int(4);
+    big_int_t c = big_int_mul(a, b);
+    big_int_t expected = big_int_from_int(20);
+
+    TEST_CHECK(big_int_cmp(c, expected) == 0, "5 * 4 == 20");
+
+    big_int_delete(&a);
+    big_int_delete(&b);
+    big_int_delete(&c);
+    big_int_delete(&expected);
+}
+
+// 2. Умножение на ноль (123 * 0 = 0)
+TEST_FN(test_mul_by_zero) {
+    big_int_t a = big_int_from_string("123456");
+    big_int_t b = big_int_from_int(0);
+    big_int_t c = big_int_mul(a, b);
+    big_int_t expected = big_int_from_int(0);
+
+    TEST_CHECK(big_int_cmp(c, expected) == 0, "123456 * 0 == 0");
+
+    big_int_delete(&a);
+    big_int_delete(&b);
+    big_int_delete(&c);
+    big_int_delete(&expected);
+}
+
+// 3. Умножение на единицу (12 * 1 = 12)
+TEST_FN(test_mul_by_one) {
+    big_int_t a = big_int_from_string("12");
+    big_int_t b = big_int_from_int(1);
+    big_int_t c = big_int_mul(a, b);
+    big_int_t expected = big_int_from_string("12");
+
+    TEST_CHECK(big_int_cmp(c, expected) == 0, "12 * 1 == 12");
+
+    big_int_delete(&a);
+    big_int_delete(&b);
+    big_int_delete(&c);
+    big_int_delete(&expected);
+}
+
+// 4. Отрицательное число ( -10 * 5 = -50 )
+TEST_FN(test_mul_negative) {
+    big_int_t a = big_int_from_string("-10");
+    big_int_t b = big_int_from_string("5");
+    big_int_t c = big_int_mul(a, b);
+    big_int_t expected = big_int_from_string("-50");
+
+    TEST_CHECK(big_int_cmp(c, expected) == 0, "-10 * 5 == -50");
+
+    big_int_delete(&a);
+    big_int_delete(&b);
+    big_int_delete(&c);
+    big_int_delete(&expected);
+}
+
+// 5. Умножение двух больших чисел из строк (12 * 12 = 144)
+TEST_FN(test_mul_strings) {
+    big_int_t a = big_int_from_string("12");
+    big_int_t b = big_int_from_string("12");
+    big_int_t c = big_int_mul(a, b);
+    big_int_t expected = big_int_from_string("144");
+
+    TEST_CHECK(big_int_cmp(c, expected) == 0, "12 * 12 == 144");
+
+    big_int_delete(&a);
+    big_int_delete(&b);
+    big_int_delete(&c);
+    big_int_delete(&expected);
+}
+
 int main() {
     RUN_TESTS();
 }

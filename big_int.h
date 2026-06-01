@@ -45,6 +45,12 @@ void convert_to_big(big_int_t *n);
 void big_int_normalize(big_int_t *n);
 void big_int_resize(big_int_t *n, size_t cp);
 void big_int_debug(big_int_t n);
+bool big_int_is_negative(big_int_t n);
+bool big_int_is_positive(big_int_t n);
+big_int_t big_int_neg(big_int_t n);
+big_int_t big_int_abs(big_int_t n);
+bool big_int_is_even(big_int_t n);
+bool big_int_is_odd(big_int_t n);
 
 #ifdef BIG_INT_IMPLEMENTATION
 big_int_t big_int_create() {
@@ -390,6 +396,46 @@ big_int_t big_int_copy(big_int_t n) {
     memcpy(c.as.data, n.as.data, sizeof(int32_t) * n.sz);
     return c;
 }   
+
+bool big_int_is_zero(big_int_t n) {
+    if (n.cp == 0) return n.as.num == 0;
+    for (size_t i = 0; i < n.sz; ++i) {
+        if (n.as.data[i] != 0) return false;
+    }
+    return true;
+}
+
+bool big_int_is_negative(big_int_t n) {
+    if (big_int_is_zero(n)) return false;
+    return n.negative;
+}
+
+bool big_int_is_positive(big_int_t n) {
+    return !big_int_is_zero(n) && !n.negative;
+}
+
+big_int_t big_int_neg(big_int_t n) {
+    big_int_t res = big_int_copy(n);
+    if (!big_int_is_zero(res)) {
+        res.negative = !res.negative;
+    }
+    return res;
+}
+
+big_int_t big_int_abs(big_int_t n) {
+    big_int_t res = big_int_copy(n);
+    res.negative = false;
+    return res;
+}
+
+bool big_int_is_even(big_int_t n) {
+    if (n.cp == 0) return (n.as.num & 1) == 0;
+    return (n.as.data[0] & 1) == 0;
+}
+
+bool big_int_is_odd(big_int_t n) {
+    return !big_int_is_even(n);
+}
 
 #endif // BIG_INT_IMPLEMENTATION
 

@@ -36,7 +36,7 @@ void big_int_print(big_int_t n);
 big_int_t big_int_copy(big_int_t n);
 
 big_int_t big_int_neg(big_int_t n);
-big_int_t big_int_abc(big_int_t n);
+big_int_t big_int_abs(big_int_t n);
 
 
 // internal functions

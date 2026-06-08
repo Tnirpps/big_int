@@ -35,7 +35,8 @@ void big_int_print(big_int_t n);
 
 big_int_t big_int_copy(big_int_t n);
 
-
+big_int_t big_int_neg(big_int_t n);
+big_int_t big_int_abs(big_int_t n);
 
 
 // internal functions
@@ -419,10 +420,23 @@ big_int_t big_int_neg(big_int_t n) {
     if (!big_int_is_zero(res)) {
         res.negative = !res.negative;
     }
+big_int_t big_int_neg(big_int_t n) {
+    if (n.cp == 0) {
+        n.as.num = -n.as.num;
+        return n;
+    }
+    big_int_t res = big_int_copy(n);
+    res.negative = !res.negative;
     return res;
 }
 
 big_int_t big_int_abs(big_int_t n) {
+    if (n.cp == 0) {
+        if (n.as.num < 0) {
+            return big_int_neg(n);
+        }
+        return n;
+    }
     big_int_t res = big_int_copy(n);
     res.negative = false;
     return res;
@@ -436,6 +450,7 @@ bool big_int_is_even(big_int_t n) {
 bool big_int_is_odd(big_int_t n) {
     return !big_int_is_even(n);
 }
+
 
 #endif // BIG_INT_IMPLEMENTATION
 

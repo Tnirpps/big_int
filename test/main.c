@@ -234,6 +234,59 @@ TEST_FN(test_copy_zero) {
     big_int_delete(&b);
 }
 
+//Тесты для big_int_neg:
+TEST_FN(test_neg_small) {
+    big_int_t a = big_int_from_int(42);
+    big_int_t b = big_int_neg(a);
+
+    TEST_CHECK(big_int_is_zero(big_int_sum(a, b)) == true, "sum of positive and negative must be zero");
+
+    big_int_delete(&a);
+    big_int_delete(&b);
+}
+
+TEST_FN(test_neg_big) {
+    big_int_t a = big_int_from_string("999999999949999999999");
+    big_int_t b = big_int_neg(a);
+
+    TEST_CHECK(big_int_is_zero(big_int_sum(a, b)) == true, "sum of positive and negative must be zero");
+
+    big_int_delete(&a);
+    big_int_delete(&b);
+}
+
+TEST_FN(test_neg_zero) {
+    big_int_t a = big_int_from_int(0);
+    big_int_t b = big_int_neg(a);
+
+    TEST_CHECK(big_int_cmp(a, b) == 0, "positive zero is the same as negative");
+
+    big_int_delete(&a);
+    big_int_delete(&b);
+}
+
+//Тесты для big_int_abs:
+TEST_FN(test_abs_small) {
+    big_int_t a = big_int_from_int(-42);
+    big_int_t b = big_int_abs(a);
+
+    TEST_CHECK(big_int_is_zero(big_int_sum(a, b)) == true, "sum of positive and negative must be zero");
+
+    big_int_delete(&a);
+    big_int_delete(&b);
+}
+
+TEST_FN(test_abs_big) {
+    big_int_t a = big_int_from_string("999999999949999999999");
+    big_int_t b = big_int_abs(a);
+
+    TEST_CHECK(big_int_cmp(a, b) == 0, "absolute measure of positive number is the same number");
+
+    big_int_delete(&a);
+    big_int_delete(&b);
+}
+
+
 int main() {
     RUN_TESTS();
 }
